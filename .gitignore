@@ -1,0 +1,8 @@
+.vscode/
+__pycache__/
+build/
+Rosbags/
+.venv/
+Acados/example/*.json
+c_generated_code/
+*.json

@@ -1,0 +1,120 @@
+/**:
+  ros__parameters:
+    recording:
+      file_path: "/home/haptacc-develop/frenet_ws/src/Rosbags/"
+      file_name: "test"
+
+    system_parameters:
+      state_space_names: ['d_t', 'd_n', 'd_b', 'v_t', 'v_n', 'v_b', 'F_x', 'F_y', 'F_z']
+      system_period: 0.02
+      #x0: [0.0, 0.0, 0.1, 0.0, 0.0, 0.0]
+      system_type: 1                          # Double Integrator: 0, Mass-Damping: 1  
+      system_parameters: [20.0, 1.0, 0.0]      # [mass, damping, stiffness]
+      #HRI_control: 0                          # None: 0, PI: 1
+
+    control_parameters:
+      control_period: 0.02
+
+    reference_tracking:   
+      trajectory_type: 4                  # 0: medi curve; 1: medi curve 3D; 2: rehab; 3: rehab 3D; 4: rehab 3d curve; 5: lines; 6: helix; 7: sin curve; 8: practical, 9: standard line.
+      frame_type: 0                       # Frenet: 0, Bishop: 1
+      num_points: 5000                    # number of interpolated points
+      trajectory_scaling_factor: 0.8      # scaling factor for the trajectory
+
+      enable_obstacle: False
+
+    geometric_transformation:
+      d_t_tresh: 1e-4           # treshhold for numeric cut-off
+      kappa_tresh: 1e-4         
+      num_points_segment: 100        # number of interpolated points for segment
+      segment_factor: 1e-4                # defines size of interpolated segment [factor * arc length]
+
+
+automation_control_node:
+  ros__parameters:
+    reference_tracking:   
+      tangent_velocity: 0.05
+      d_t_ref: 0.0
+      d_n_ref: 0.0
+      d_b_ref: 0.0
+
+    control_parameters:
+      pi_controller:
+        K_P_d: -50.0   # 100
+        K_P_v: -1.5     # 1.5
+        K_I_d: -40.0    # 40
+        K_I_v: -0.1   	# 0.
+
+      mpc_controller:
+        enable_predefined_cost: False    # uses the predefined cost -> see cost_utility.py (ignores the following values)
+
+        Q: [1.0, 50000.1, 50000.1, 100.0, 15.0, 15.0]         # [d_t, d_n, d_b, v_t, v_n, v_b]
+        R: [20.1, 20.1, 20.1]
+        cost_slack_variables: 40.0
+
+        auto_N: False     # FALSE: manual, TRUE: auto [N = T / system_period] -> overwrites N
+        N: 20        
+        T: 1.0
+
+        constraint:
+          enable_predefined_constraints: True      # use predefined constraints -> see constraint_utility.py (ignores the following values)
+
+          soft_constraint_factor: 0.15
+          lbx: [-1.0,               # d_t 
+                -0.5, -0.5,         # d_n and d_n obstacle
+                -0.5, -0.5,         # d_b and d_b obstacle
+                -0.5, -0.01, -0.1]   # v_t, v_n, v_b
+          ubx: [1.0, 
+                0.5, 0.5, 
+                0.5, 0.5, 
+                1.0, 1.0, 1.0]
+          lbu: [-10.3, -10.3, -10.3]
+          ubu: [10.3, 10.3, 10.3]
+
+          
+human_control_node:
+  ros__parameters:
+    reference_tracking:   
+
+      tangent_velocity: 0.01
+      d_t_ref: 0.0
+      d_n_ref: 0.05
+      d_b_ref: -0.0
+
+    control_parameters:
+      pi_controller:
+        K_P_d: -100.0   # 40
+        K_P_v: -1.5   # 12
+        K_I_d: -40.0   # 5
+        K_I_v: -0.1   # 1
+
+
+      mpc_controller:
+        Q: [1.0, 300.001, 300.001, 30.001, 15.0, 15.0]
+        R: [20.1, 20.1, 20.1]
+        cost_slack_variables: 5.0
+
+        enable_predefined_cost: False
+
+        auto_N: False     # FALSE: manual, TRUE: auto [N = T / system_period] -> overwrites N
+        N: 20        
+        T: 1.0
+
+        constraint:
+          enable_predefined_constraints: False
+
+          soft_constraint_factor: 0.05
+          lbx: [-1.0,               # d_t 
+                -0.5, -0.5,         # d_n and d_n obstacle
+                -0.5, -0.5,         # d_b and d_b obstacle
+                -0.1, -0.1, -0.1]   # v_t, v_n, v_b
+          ubx: [1.0, 
+                0.5, 0.5, 
+                0.5, 0.5, 
+                3.3, 3.3, 3.3]
+          lbu: [-33.3, -33.3, -33.3]
+          ubu: [33.3, 33.3, 33.3]
+
+
+
+
